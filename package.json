@@ -1,0 +1,38 @@
+{
+  "name": "alpha-bot",
+  "displayName": "Alpha Bot",
+  "description": "Alpha Bot: an autonomous browser bot that visibly types security-test payloads into a locally running web application's forms to check whether common vulnerabilities are exploitable.",
+  "version": "0.0.1",
+  "publisher": "alpha-bot",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "alphaBot.runScan",
+        "title": "Alpha Bot: Run Scan"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "package": "node esbuild.js --production",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.23.0",
+    "typescript": "^5.5.0"
+  }
+}
