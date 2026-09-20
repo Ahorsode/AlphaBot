@@ -8,6 +8,8 @@
 // and the attack sequence.
 
 import * as vscode from "vscode";
+import { launchBot } from "./bot/launchBot";
+import { runAttackSequence } from "./bot/runAttackSequence";
 
 /**
  * The shared output channel for Alpha Bot. All bot activity is logged here so
@@ -48,9 +50,44 @@ export function log(message: string): void {
 export function activate(context: vscode.ExtensionContext): void {
   log("Alpha Bot activated.");
 
-  const runScan = vscode.commands.registerCommand("alphaBot.runScan", () => {
+  const runScan = vscode.commands.registerCommand("alphaBot.runScan", async () => {
     log("Alpha Bot: Run Scan invoked.");
-    vscode.window.showInformationMessage("Alpha Bot is ready.");
+
+    const target = await vscode.window.showInputBox({
+      title: "Alpha Bot: Run Scan",
+      prompt: "Enter the local target URL to scan (localhost or 127.0.0.1 only).",
+      placeHolder: "http://localhost:3000",
+      value: "http://localhost:3000",
+      ignoreFocusOut: true
+    });
+
+    if (target === undefined) {
+      log("Scan cancelled: no target entered.");
+      return;
+    }
+
+    getOutputChannel().show(true);
+
+    const session = await launchBot(target);
+    if (!session) {
+      // launchBot already surfaced an error message and logged the reason.
+      return;
+    }
+
+    vscode.window.showInformationMessage(
+      `Alpha Bot opened ${session.targetUrl}. Typing payloads into forms...`
+    );
+
+    try {
+      const attempts = await runAttackSequence(session.page, log);
+      vscode.window.showInformationMessage(
+        `Alpha Bot finished: ${attempts} payload attempt(s) made. See the Alpha Bot output channel.`
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      log(`Attack sequence failed: ${message}`);
+      vscode.window.showErrorMessage(`Alpha Bot: attack sequence failed — ${message}`);
+    }
   });
 
   context.subscriptions.push(runScan);
